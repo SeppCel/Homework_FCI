@@ -159,6 +159,44 @@ axs[1, 1].text(0.95, 0.80,
 
 #axs[2, 1].axis('off')
 
+
+##CALCOLO VARIANZA E ENERGIA##
+
+var_x = np.var(x1N)
+var_y = np.var(y1N)
+
+print(f"--- Varianza ---")
+print(f"Varianza segnale originale (x1N): {var_x:.2f}")
+print(f"Varianza segnale filtrato (y1N): {var_y:.2f}")
+
+N = len(x1N) 
+
+energia_x = r_xx[N - 1] 
+energia_y = r_yy[N - 1]
+
+# energia_x = np.correlate(x1N, x1N, mode='valid')[0]
+# energia_y = np.correlate(y1N, y1N, mode='valid')[0]
+
+print(f"\n--- Energia (Autocorrelazione a Lag 0) ---")
+print(f"Energia segnale originale (r_xx[0]): {energia_x:.2f}")
+print(f"Energia segnale filtrato (r_yy[0]): {energia_y:.2f}")
+
+
+
+
+half_max_x = energia_x / 2.0
+half_max_y = energia_y / 2.0
+
+width_x = np.sum(r_xx > half_max_x)
+width_y = np.sum(r_yy > half_max_y)
+
+print(f"\n--- Larghezza Lobo Centrale (a metà altezza) ---")
+print(f"Larghezza lobo segnale originale (x1N): {width_x} campioni")
+print(f"Larghezza lobo segnale filtrato (y1N): {width_y} campioni")
+
+
+
+
 # Spaziatura e visualizzazione
 plt.tight_layout(pad = 3.0)
 plt.show()
