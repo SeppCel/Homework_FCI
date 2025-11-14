@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-#loading files
-csv_x1 = r"./pressure_8734.csv"
-csv_x2 = r"./pressure_8606.csv"
+#loading data
+csv_x1 = r"pressure_8734.csv"
+csv_x2 = r"pressure_8606.csv"
 
 df1 = pd.read_csv(csv_x1)
 df2 = pd.read_csv(csv_x2)
@@ -14,23 +14,9 @@ df2 = pd.read_csv(csv_x2)
 x1 = df1["pressure_value"].values
 x2 = df2["pressure_value"].values
 
-# --- CODICE ---
+#asse delle ascisse definito dalle ore a cui vengono lette le x1
+ore = df1['hour'].str.split(':').str[0].astype(int).values
 
-p34 = open(csv_x1, "r") # RICORDA DI CHIUDERE IL FILE CON p34.close()
-p34.readline()
-p34.readline()
-
-ore = list()
-pressioni = list()
-for riga in p34.readlines():
-    r = riga.strip("\n").split(",")
-    ore.append(int(r[0].split(":")[0]))
-    pressioni.append(float(r[1]))
-
-ore = np.array(ore)
-pressioni = np.array(pressioni)
-
-p34.close()
 
 
 #funzioni utili
@@ -51,12 +37,10 @@ def sinc_filter(n):
 
 def convoluzione(sig1, sig2):
     ris = np.zeros(len(sig1))
-    for i in range(len(sig1)):
-        print("sig1 " + str(sig1[i]),"sig2 " + str(sig2[-i-1]))
+    for i in range(len(sig1)-1):
         ris[i] = sig1[i] * sig2[-i-1]
     return ris
 
-print(convoluzione(np.arange(3),np.arange(3)))
 
 
 
@@ -64,11 +48,10 @@ print(convoluzione(np.arange(3),np.arange(3)))
 x_spostato = np.subtract(ore, (len(ore)-1)/2)
 h_x = np.sinc(x_spostato)
 
-y_n = np.convolve(h_x, pressioni, mode="same")
-y_n = convoluzione(h_x, pressioni)
-print(y_n)
+y_n = np.convolve(h_x, x1, mode="same")
+y_n = convoluzione(h_x, x1)
 
-#grafico convoluzione pressioni e sinc
+#grafico convoluzione x1 e sinc
 """plt.subplot(2,3,3)
 plt.plot(rect(1), y_n, label='convoluzione', color="#ff0606", linewidth=0.5)
 plt.show()"""
@@ -76,7 +59,7 @@ plt.show()"""
 
 #Esercizio 2 punto b
 #autocorrelazione segnali x e y
-x_corr = int(np.correlate(pressioni, pressioni))
+x_corr = int(np.correlate(x1, x1))
 y_corr = int(np.correlate(y_n, y_n))
 
 
@@ -86,11 +69,11 @@ y_corr = int(np.correlate(y_n, y_n))
 fig, axs = plt.subplots(3, 2, figsize=(15, 12))
 
 # Grafico 1
-axs[0, 0].plot(ore, pressioni, label='funzione', color='#1f77b4', linewidth=0.5)
-axs[0, 0].axhline(valore_medio(pressioni), linestyle='--', color='darkred', label=f'Valore Medio: {valore_medio(pressioni):.2f}')
-#axs[0, 0].axhline(energia(pressioni), linestyle='--', color='darkred', label=f'Energia: {energia(pressioni):.2f}')
+axs[0, 0].plot(ore, x1, label='funzione', color='#1f77b4', linewidth=0.5)
+axs[0, 0].axhline(valore_medio(x1), linestyle='--', color='darkred', label=f'Valore Medio: {valore_medio(x1):.2f}')
+#axs[0, 0].axhline(energia(x1), linestyle='--', color='darkred', label=f'Energia: {energia(x1):.2f}')
 axs[0, 0].set_xlim(min(ore), max(ore))
-axs[0, 0].set_ylim(min(pressioni), max(pressioni))
+axs[0, 0].set_ylim(min(x1), max(x1))
 axs[0, 0].set_xlabel("Orario")
 axs[0, 0].set_ylabel("Pressioni")
 axs[0, 0].set_title("Pressioni durante il tempo")
@@ -108,7 +91,7 @@ axs[0, 1].grid(True, linestyle=':', alpha=0.5)
 axs[0, 1].legend()
 
 #es2: Grafico Pressioni 
-axs[1, 0].plot(x_spostato, pressioni, label='funzione originale', color="#1AECFF", linewidth=0.5)
+axs[1, 0].plot(x_spostato, x1, label='funzione originale', color="#1AECFF", linewidth=0.5)
 axs[1, 0].set_title("Esercizio 2: Segnale originale")
 axs[1, 0].set_xlabel("Campioni (spostati)")
 axs[1, 0].set_ylabel("Pressione")
