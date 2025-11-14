@@ -51,38 +51,10 @@ def sinc_filter(n):
 
 
 
-#Esercizio 2
-
-x_spostato = np.subtract(ore, (len(ore)-1)/2)
-h_x = np.sinc(x_spostato)
-
-N = len(pressioni)
-n = np.arange(N)
-n_centered = n - (N - 1) / 2
-
-B = 0.1
-
-h_x_reale = np.sinc(B * n_centered)
-h_x_reale = h_x_reale / np.sum(h_x_reale)
-
-y_n = np.convolve(pressioni, h_x_reale, mode="same")
-
-
-
-#Esercizio 2 punto b
-#autocorrelazione segnali x e y
-
-x1N = pressioni - np.mean(pressioni)
-y1N = y_n - np.mean(y_n)
-r_xx = np.correlate(x1N, x1N, mode='full')
-r_yy = np.correlate(y1N, y1N, mode='full')
-lag = np.arange(-len(pressioni) + 1, len(pressioni))
-
-
 ###grafici in una sola finestra###
 
 #finestra unica
-fig, axs = plt.subplots(3, 2, figsize=(15, 12))
+fig, axs = plt.subplots(2, 2, figsize=(15, 12))
 
 #GRAFICO 1---------------
 energia = np.sum(pressioni**2)
@@ -99,7 +71,35 @@ axs[0, 0].text(0.70, 0.10, f'Energia = {energia:.2f}', transform=axs[0,0].transA
          bbox=dict(facecolor='white', edgecolor='black'))
 
 
-#GRAFICO 2a---------------
+
+#_____________________________________________________________________
+##ESERCIZIO 2##
+
+x_spostato = np.subtract(ore, (len(ore)-1)/2)
+h_x = np.sinc(x_spostato)
+
+N = len(pressioni)
+n = np.arange(N)
+n_centered = n - (N - 1) / 2
+
+B = 0.1
+
+h_x_reale = np.sinc(B * n_centered)
+h_x_reale = h_x_reale / np.sum(h_x_reale)
+
+y_n = np.convolve(pressioni, h_x_reale, mode="same")
+
+
+#Esercizio 2 punto b
+#autocorrelazione segnali x e y
+
+x1N = pressioni - np.mean(pressioni)
+y1N = y_n - np.mean(y_n)
+r_xx = np.correlate(x1N, x1N, mode='full')
+r_yy = np.correlate(y1N, y1N, mode='full')
+lag = np.arange(-len(pressioni) + 1, len(pressioni))
+
+#GRAFICO 2a
 axs[0, 1].plot(x_spostato, y_n, label='Segnale Filtrato y_n', color="#060002", linewidth=1)
 axs[0, 1].set_ylim(31,38)
 axs[0, 1].set_title("Segnale filtrato (y_n) e segnale originale")
@@ -122,7 +122,7 @@ axs[1, 0].grid(True, linestyle=':', alpha=0.5)
 axs[1, 0].legend()
 
 
-##GRAFICO 2B---------------
+##GRAFICO 2B
 #Autocorrelazione X
 axs[1, 1].plot(lag, r_xx, label='Autocorrelazione x', color='blue', linewidth=1)
 axs[1, 1].set_title("Confronto Autocorrelazione r_xx e r_yy")
@@ -178,7 +178,11 @@ print(f"Larghezza lobo segnale originale (x1N): {width_x} campioni")
 print(f"Larghezza lobo segnale filtrato (y1N): {width_y} campioni")
 
 
+
+#_______________________________________________________________________
 ##ESERCIZIO 3##
+
+#punto a
 
 x2N = x2 - np.mean(x2)            
 
@@ -192,20 +196,21 @@ delta_x = np.abs(x1N - x2N)
 figes3, axs_es3 = plt.subplots(3,1, figsize=(15,10), sharex=True)
 figes3.suptitle("Salto e Segnali di Pressione nei Nodi 8734 e 8606")
 
+#nodo 8734
 axs_es3[0].plot(n, x1N, label='$x_{1N}[n]$ (Nodo 8734)', color='#1f77b4', linewidth=1)
 axs_es3[0].set_title('Segnale $x_{1N}[n]$ (Nodo 8734)')
 axs_es3[0].set_ylabel('Pressione (centrata)')
 axs_es3[0].grid(True, linestyle=':', alpha=0.7)
 axs_es3[0].legend(loc='upper right')
 
-# --- Subplot 2: x2N (Nodo 8606) ---
+#nodo 8606
 axs_es3[1].plot(n, x2N, label='$x_{2N}[n]$ (Nodo 8606)', color='#ff7f0e', linewidth=1)
 axs_es3[1].set_title('Segnale $x_{2N}[n]$ (Nodo 8606)')
 axs_es3[1].set_ylabel('Pressione (centrata)')
 axs_es3[1].grid(True, linestyle=':', alpha=0.7)
 axs_es3[1].legend(loc='upper right')
 
-# --- Subplot 3: Delta x (Salto di pressione) ---
+#salto
 axs_es3[2].plot(n, delta_x, label='$\Delta x[n] = |x_{1N} - x_{2N}|$', color='#d62728', linewidth=1)
 axs_es3[2].set_title('Salto di Pressione $\Delta x[n]$')
 axs_es3[2].set_xlabel('Campione (n)', fontsize=12)
@@ -213,9 +218,32 @@ axs_es3[2].set_ylabel('Differenza Assoluta')
 axs_es3[2].grid(True, linestyle=':', alpha=0.7)
 axs_es3[2].legend(loc='upper right')
 
-# Ottimizziamo lo spazio e mostriamo
-figes3.tight_layout(rect=[0, 0.03, 1, 0.95]) # Aggiusta per il titolo principale
+figes3.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-# Spaziatura e visualizzazione
+
+#punto b
+
+K = 3
+
+windows_x1N = np.array_split(x1N, K)
+windows_x2N = np.array_split(x2N, K)
+
+rho_k_list = [] 
+
+print(f"Calcolo coefficienti di correlazione per K={K} finestre:")
+
+for k in range(K):
+    finestra_x1 = windows_x1N[k]
+    finestra_x2 = windows_x2N[k]
+    
+    rho_k = np.corrcoef(finestra_x1, finestra_x2)[0, 1]
+    
+    rho_k_list.append(rho_k)
+    
+    print(f"  Finestra k={k+1}: rho = {rho_k:.4f}")
+
+print(f"\nLista dei coefficienti di correlazione: {rho_k_list}")
+
+
 fig.tight_layout(pad = 3.0)
 plt.show()
