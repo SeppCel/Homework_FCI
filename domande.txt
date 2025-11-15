@@ -1,0 +1,17 @@
+#varie domande che mi sono venute in mente
+1.Ho visto che il segnale filtrato ha dei picchi ai bordi penso dovuti al fatto che le pressioni sono definite entro questi bordi,
+questo fa si che l'energia del segnale filtrato sia maggiore di quello originale, quando secondo la teoria dovrebbe essere il contrario
+(questa cosa si vede anche dal coefficiente di correlazione basso), penso o proviamo a diminuire l'impatto di questi bordi (difficile)
+o spieghiamo il motivo per cui succede questa cosa(penso meglio)
+risposte:
+
+2.penso sarebbe meglio se tutti i grafici siano definiti sulle stesse ascisse (x), invece di alcuni tra 0 e ~700 e altri -300:300,
+condividete? -> risposte:
+
+3.Per quanto riguarda il filtro, stavo cercando un po di capire la teoria e pare che bisognerebbe fare B*sinc(Bx) in modo che la
+convoluzione venga con lo stesso valore medio delle pressioni (per qualche motivo questa cosa è importante), ho testato questa cosa
+e viene un risultato molto simile con una differenza massima rispetto a prima di 2e-6, poi per la scelta di B Edo ci ha azzeccato,
+a quanto pare deve essere nel nostro caso un valore compreso tra 0 e 1 e più vicino a 0 implica più smussato ma perdi molta energia
+(cambi molto il segnale), più vicino a 1 vuol dire molto simile a quello originale (problema che avevamo all'inizio), quindi direi che
+B=0.1 va bene e magari mettiamo questa spiegazione. Opinioni?:
+

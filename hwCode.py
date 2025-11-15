@@ -11,27 +11,11 @@ df1 = pd.read_csv(csv_x1)
 df2 = pd.read_csv(csv_x2)
 
 # segnali di pressione
-x1 = df1["pressure_value"].values
+pressioni = df1["pressure_value"].values
 x2 = df2["pressure_value"].values
 
-# --- CODICE ---
-
-p34 = open(csv_x1, "r") # RICORDA DI CHIUDERE IL FILE CON p34.close()
-p34.readline()
-p34.readline()
-
-ore = list()
-pressioni = list()
-for riga in p34.readlines():
-    r = riga.strip("\n").split(",")
-    ore.append(int(r[0].split(":")[0]))
-    pressioni.append(float(r[1]))
-
-ore = np.array(ore)
-pressioni = np.array(pressioni)
-
-p34.close()
-
+#asse delle ascisse definito dalle ore a cui vengono lette le x1
+ore = df1['hour'].str.split(':').str[0].astype(int).values
 
 #funzioni utili
 def rect(n):
@@ -43,11 +27,11 @@ def tri(n):
 def valore_medio(sig):
     return np.mean(sig)
 
-def energia(sig):
+def energia(sig): #tempo discreto
     return np.sum(np.dot(sig, sig))
 
 def sinc_filter(n):
-    return np.sin(n)/(n)
+    return np.sinc(n)
 
 
 
@@ -57,7 +41,7 @@ def sinc_filter(n):
 fig, axs = plt.subplots(2, 2, figsize=(15, 12))
 
 #GRAFICO 1---------------
-energia = np.sum(pressioni**2)
+energia_pressioni_1 = energia(pressioni)
 axs[0, 0].plot(ore, pressioni, label='Funzione', color='#1f77b4', linewidth=1)
 axs[0, 0].axhline(valore_medio(pressioni), linestyle='--', color='darkred', label=f'Valore Medio: {valore_medio(pressioni):.2f}')
 axs[0, 0].set_xlim(min(ore), max(ore))
@@ -67,7 +51,7 @@ axs[0, 0].set_ylabel("Pressioni")
 axs[0, 0].set_title("Segnale Pressioni")
 axs[0, 0].grid(True, linestyle=':', alpha=0.5)
 axs[0, 0].legend()
-axs[0, 0].text(0.70, 0.10, f'Energia = {energia:.2f}', transform=axs[0,0].transAxes, 
+axs[0, 0].text(0.70, 0.10, f'Energia = {energia_pressioni_1:.2f}', transform=axs[0,0].transAxes, 
          bbox=dict(facecolor='white', edgecolor='black'))
 
 
@@ -75,19 +59,15 @@ axs[0, 0].text(0.70, 0.10, f'Energia = {energia:.2f}', transform=axs[0,0].transA
 #_____________________________________________________________________
 ##ESERCIZIO 2##
 
-x_spostato = np.subtract(ore, (len(ore)-1)/2)
-h_x = np.sinc(x_spostato)
+x_spostato = np.subtract(ore, (len(ore)-1)/2) #Asse ascisse centrato
 
-N = len(pressioni)
-n = np.arange(N)
-n_centered = n - (N - 1) / 2
+B = 0.1 #Fattore scalatura sinc
 
-B = 0.1
+h_x = B * np.sinc(B * x_spostato)
+#h_x = h_x / np.sum(h_x)
+#print(np.mean(h_x * B) - np.mean(h_x/np.sum(h_x)))
 
-h_x_reale = np.sinc(B * n_centered)
-h_x_reale = h_x_reale / np.sum(h_x_reale)
-
-y_n = np.convolve(pressioni, h_x_reale, mode="same")
+y_n = np.convolve(pressioni, h_x, mode="same")
 
 
 #Esercizio 2 punto b
@@ -98,6 +78,7 @@ y1N = y_n - np.mean(y_n)
 r_xx = np.correlate(x1N, x1N, mode='full')
 r_yy = np.correlate(y1N, y1N, mode='full')
 lag = np.arange(-len(pressioni) + 1, len(pressioni))
+
 
 #GRAFICO 2a
 axs[0, 1].plot(x_spostato, y_n, label='Segnale Filtrato y_n', color="#060002", linewidth=1)
@@ -114,7 +95,7 @@ axs[0, 1].set_ylabel("Pressione")
 axs[0, 1].grid(True, linestyle=':', alpha=0.5)
 axs[0, 1].legend()
 
-axs[1, 0].plot(h_x_reale, label='Filtro Sinc', color="#FF5733", linewidth=1)
+axs[1, 0].plot(h_x, label='Funzione Sinc(x/10)', color="#FF5733", linewidth=1)
 axs[1, 0].set_title("Filtro Sinc Applicato")
 axs[1, 0].set_xlabel("Campioni")
 axs[1, 0].set_ylabel("Ampiezza")
@@ -126,8 +107,23 @@ axs[1, 0].legend()
 #Autocorrelazione X
 axs[1, 1].plot(lag, r_xx, label='Autocorrelazione x', color='blue', linewidth=1)
 axs[1, 1].set_title("Confronto Autocorrelazione r_xx e r_yy")
+#aggiunto un box con l'energia r_xx[0] e r_yy[0], utile?
+axs[1, 1].text(0.05, 0.97,
+             f'Autocorrelazione x(0) = {r_xx[len(r_xx)//2]:.2f}',  
+             transform=axs[1, 1].transAxes, 
+             fontsize=10,
+             verticalalignment='top',
+             horizontalalignment='left',
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 #Autocorrelazione Y
 axs[1, 1].plot(lag,r_yy, label='Autocorrelazione y', color='orange', linewidth=1)
+axs[1, 1].text(0.05, 0.90,
+             f'Autocorrelazione y(0) = {r_yy[len(r_yy)//2]:.2f}',  
+             transform=axs[1, 1].transAxes, 
+             fontsize=10,
+             verticalalignment='top',
+             horizontalalignment='left',
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 axs[1, 1].set_xlabel("Ritardo (Lag)")
 axs[1, 1].grid(True, alpha=0.3)
 axs[1, 1].legend()
@@ -166,7 +162,6 @@ print(f"Energia segnale filtrato (r_yy[0]): {energia_y:.2f}")
 
 
 
-
 half_max_x = energia_x / 2.0
 half_max_y = energia_y / 2.0
 
@@ -197,21 +192,21 @@ figes3, axs_es3 = plt.subplots(3,1, figsize=(15,10), sharex=True)
 figes3.suptitle("Salto e Segnali di Pressione nei Nodi 8734 e 8606")
 
 #nodo 8734
-axs_es3[0].plot(n, x1N, label='$x_{1N}[n]$ (Nodo 8734)', color='#1f77b4', linewidth=1)
+axs_es3[0].plot(ore, x1N, label='$x_{1N}[n]$ (Nodo 8734)', color='#1f77b4', linewidth=1)
 axs_es3[0].set_title('Segnale $x_{1N}[n]$ (Nodo 8734)')
 axs_es3[0].set_ylabel('Pressione (centrata)')
 axs_es3[0].grid(True, linestyle=':', alpha=0.7)
 axs_es3[0].legend(loc='upper right')
 
 #nodo 8606
-axs_es3[1].plot(n, x2N, label='$x_{2N}[n]$ (Nodo 8606)', color='#ff7f0e', linewidth=1)
+axs_es3[1].plot(ore, x2N, label='$x_{2N}[n]$ (Nodo 8606)', color='#ff7f0e', linewidth=1)
 axs_es3[1].set_title('Segnale $x_{2N}[n]$ (Nodo 8606)')
 axs_es3[1].set_ylabel('Pressione (centrata)')
 axs_es3[1].grid(True, linestyle=':', alpha=0.7)
 axs_es3[1].legend(loc='upper right')
 
 #salto
-axs_es3[2].plot(n, delta_x, label='$\Delta x[n] = |x_{1N} - x_{2N}|$', color='#d62728', linewidth=1)
+axs_es3[2].plot(ore, delta_x, label='$\Delta x[n] = |x_{1N} - x_{2N}|$', color='#d62728', linewidth=1)
 axs_es3[2].set_title('Salto di Pressione $\Delta x[n]$')
 axs_es3[2].set_xlabel('Campione (n)', fontsize=12)
 axs_es3[2].set_ylabel('Differenza Assoluta')
