@@ -79,7 +79,7 @@ x1N = pressioni - np.mean(pressioni)
 y1N = y_n - np.mean(y_n) # y_n ora è quello corretto
 r_xx = np.correlate(x1N, x1N, mode='full')
 r_yy = np.correlate(y1N, y1N, mode='full')
-lag = np.arange(-len(pressioni) + 1, len(pressioni))
+lag = np.arange(len(r_xx))
 
 
 #GRAFICO 2a
@@ -160,7 +160,7 @@ def calcola_larghezza_lobo(autocorr_array):
     
     """Calcola la larghezza del lobo centrale come la distanza 
     tra il primo zero prima del picco e il primo zero dopo il picco."""
-    
+
     center_index = len(autocorr_array) // 2
     index_zero_before = -1
     index_zero_after = -1
@@ -173,6 +173,7 @@ def calcola_larghezza_lobo(autocorr_array):
     for i in range(center_index - 1, -1, -1):
         if autocorr_array[i] <= 0:
             index_zero_before = i
+            break
             
     if index_zero_before != -1 and index_zero_after != -1:
         larghezza = index_zero_after - index_zero_before
@@ -186,7 +187,7 @@ def calcola_larghezza_lobo(autocorr_array):
 width_x = calcola_larghezza_lobo(r_xx)
 width_y = calcola_larghezza_lobo(r_yy) 
 
-print(f"\n--- Larghezza Lobo Centrale (a metà altezza) ---")
+print(f"\n--- Larghezza Lobo Centrale ---")
 print(f"Larghezza lobo segnale originale (x1N): {width_x} campioni")
 print(f"Larghezza lobo segnale filtrato (y1N): {width_y} campioni")
 
