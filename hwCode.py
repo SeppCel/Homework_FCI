@@ -46,7 +46,7 @@ axs[0, 0].plot(ore, pressioni, label='Funzione', color='#1f77b4', linewidth=1)
 axs[0, 0].axhline(valore_medio(pressioni), linestyle='--', color='darkred', label=f'Valore Medio: {valore_medio(pressioni):.2f}')
 axs[0, 0].set_xlim(min(ore), max(ore))
 axs[0, 0].set_ylim(min(pressioni), max(pressioni))
-axs[0, 0].set_xlabel("Orario")
+axs[0, 0].set_xlabel("Ore")
 axs[0, 0].set_ylabel("Pressioni")
 axs[0, 0].set_title("Segnale Pressioni")
 axs[0, 0].grid(True, linestyle=':', alpha=0.5)
@@ -56,56 +56,47 @@ axs[0, 0].text(0.70, 0.10, f'Energia = {energia_pressioni_1:.2f}', transform=axs
 
 
 
-#_____________________________________________________________________
 ##ESERCIZIO 2##
 
-x_spostato = np.subtract(ore, (len(ore)-1)/2) #Asse ascisse centrato
+N = len(pressioni)
+n_indici = np.arange(N)
+n_centered = n_indici - (N - 1) / 2 
 
 B = 0.1 #Fattore scalatura sinc
 
-B = 0.1 #Fattore scalatura sinc
 
-h_x = B * np.sinc(B * x_spostato)
-#h_x = h_x / np.sum(h_x)
-#print(np.mean(h_x * B) - np.mean(h_x/np.sum(h_x)))
+h_x = B * np.sinc(B * n_centered)
 
-y_n = np.convolve(pressioni, h_x, mode="same")
+#filtro normalizzato
+h_x = h_x / np.sum(h_x)
 
-h_x = B * np.sinc(B * x_spostato)
-#h_x = h_x / np.sum(h_x)
-#print(np.mean(h_x * B) - np.mean(h_x/np.sum(h_x)))
 
 y_n = np.convolve(pressioni, h_x, mode="same")
 
 
 #Esercizio 2 punto b
-#autocorrelazione segnali x e y
-
 x1N = pressioni - np.mean(pressioni)
-y1N = y_n - np.mean(y_n)
+y1N = y_n - np.mean(y_n) # y_n ora è quello corretto
 r_xx = np.correlate(x1N, x1N, mode='full')
 r_yy = np.correlate(y1N, y1N, mode='full')
 lag = np.arange(-len(pressioni) + 1, len(pressioni))
 
 
 #GRAFICO 2a
-axs[0, 1].plot(x_spostato, y_n, label='Segnale Filtrato y_n', color="#060002", linewidth=1)
-axs[0, 1].set_ylim(31,38)
+
+axs[0, 1].plot(ore, y_n, label='Segnale Filtrato y_n', color="#060002", linewidth=1.5)
 axs[0, 1].set_title("Segnale filtrato (y_n) e segnale originale")
-axs[0, 1].set_xlabel("Campioni (spostati)")
+axs[0, 1].set_xlabel("Orario")
 axs[0, 1].set_ylabel("Ampiezza")
 axs[0, 1].grid(True, linestyle=':', alpha=0.5)
-axs[0, 1].legend()
 
-axs[0, 1].plot(x_spostato, pressioni, label='Funzione Originale', color="#17C2D2", linewidth=0.5)
-axs[0, 1].set_xlabel("Campioni (spostati)")
-axs[0, 1].set_ylabel("Pressione")
-axs[0, 1].grid(True, linestyle=':', alpha=0.5)
-axs[0, 1].legend()
+axs[0, 1].plot(ore, pressioni, label='Funzione Originale', color="#17C2D2", linewidth=0.5)
+axs[0, 1].legend() 
 
-axs[1, 0].plot(h_x, label='Funzione Sinc(x/10)', color="#FF5733", linewidth=1)
-axs[1, 0].set_title("Filtro Sinc Applicato")
-axs[1, 0].set_xlabel("Campioni")
+
+axs[1, 0].plot(n_centered, h_x, label='Filtro Sinc(x/10)', color="#FF5733", linewidth=1)
+axs[1, 0].set_title("Filtro Sinc Applicato (Corretto)")
+axs[1, 0].set_xlabel("Campioni (n)")
 axs[1, 0].set_ylabel("Ampiezza")
 axs[1, 0].grid(True, linestyle=':', alpha=0.5)
 axs[1, 0].legend()
@@ -150,31 +141,25 @@ axs[1, 1].text(0.95, 0.80,
 ##CALCOLO VARIANZA E ENERGIA##
 
 var_x = np.var(x1N)
-var_y = np.var(y1N)
+var_y = np.var(y1N) 
 
 print(f"--- Varianza ---")
 print(f"Varianza segnale originale (x1N): {var_x:.2f}")
 print(f"Varianza segnale filtrato (y1N): {var_y:.2f}")
 
-N = len(x1N) 
-
 energia_x = r_xx[N - 1] 
-energia_y = r_yy[N - 1]
-
-# energia_x = np.correlate(x1N, x1N, mode='valid')[0]
-# energia_y = np.correlate(y1N, y1N, mode='valid')[0]
+energia_y = r_yy[N - 1] 
 
 print(f"\n--- Energia (Autocorrelazione a Lag 0) ---")
 print(f"Energia segnale originale (r_xx[0]): {energia_x:.2f}")
 print(f"Energia segnale filtrato (r_yy[0]): {energia_y:.2f}")
 
 
-
 half_max_x = energia_x / 2.0
 half_max_y = energia_y / 2.0
 
 width_x = np.sum(r_xx > half_max_x)
-width_y = np.sum(r_yy > half_max_y)
+width_y = np.sum(r_yy > half_max_y) 
 
 print(f"\n--- Larghezza Lobo Centrale (a metà altezza) ---")
 print(f"Larghezza lobo segnale originale (x1N): {width_x} campioni")
