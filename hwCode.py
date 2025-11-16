@@ -63,6 +63,14 @@ x_spostato = np.subtract(ore, (len(ore)-1)/2) #Asse ascisse centrato
 
 B = 0.1 #Fattore scalatura sinc
 
+B = 0.1 #Fattore scalatura sinc
+
+h_x = B * np.sinc(B * x_spostato)
+#h_x = h_x / np.sum(h_x)
+#print(np.mean(h_x * B) - np.mean(h_x/np.sum(h_x)))
+
+y_n = np.convolve(pressioni, h_x, mode="same")
+
 h_x = B * np.sinc(B * x_spostato)
 #h_x = h_x / np.sum(h_x)
 #print(np.mean(h_x * B) - np.mean(h_x/np.sum(h_x)))
