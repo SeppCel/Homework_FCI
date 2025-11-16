@@ -156,12 +156,35 @@ print(f"\n--- Energia (Autocorrelazione a Lag 0) ---")
 print(f"Energia segnale originale (r_xx[0]): {energia_x:.2f}")
 print(f"Energia segnale filtrato (r_yy[0]): {energia_y:.2f}")
 
+def calcola_larghezza_lobo(autocorr_array):
+    
+    """Calcola la larghezza del lobo centrale come la distanza 
+    tra il primo zero prima del picco e il primo zero dopo il picco."""
+    
+    center_index = len(autocorr_array) // 2
+    index_zero_before = -1
+    index_zero_after = -1
 
-half_max_x = energia_x / 2.0
-half_max_y = energia_y / 2.0
+    for i in range(center_index + 1, len(autocorr_array)):
+        if autocorr_array[i] <= 0:
+            index_zero_after = i
+            break
+            
+    for i in range(center_index - 1, -1, -1):
+        if autocorr_array[i] <= 0:
+            index_zero_before = i
+            
+    if index_zero_before != -1 and index_zero_after != -1:
+        larghezza = index_zero_after - index_zero_before
+        return larghezza
+    else:
+        print("Attenzione: Impossibile trovare entrambi gli zeri del lobo centrale.")
+        print(f"Indice prima: {index_zero_before}, Indice dopo: {index_zero_after}")
+        return -1
+    
 
-width_x = np.sum(r_xx > half_max_x)
-width_y = np.sum(r_yy > half_max_y) 
+width_x = calcola_larghezza_lobo(r_xx)
+width_y = calcola_larghezza_lobo(r_yy) 
 
 print(f"\n--- Larghezza Lobo Centrale (a metà altezza) ---")
 print(f"Larghezza lobo segnale originale (x1N): {width_x} campioni")
