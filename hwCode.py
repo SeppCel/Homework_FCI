@@ -88,6 +88,8 @@ axs[0, 1].plot(ore, y_n, label='Segnale Filtrato y_n', color="#060002", linewidt
 axs[0, 1].set_title("Segnale filtrato (y_n) e segnale originale")
 axs[0, 1].set_xlabel("Orario")
 axs[0, 1].set_ylabel("Ampiezza")
+axs[0, 1].set_xlim(min(ore), max(ore))
+axs[0, 1].set_ylim(min(pressioni), max(pressioni))
 axs[0, 1].grid(True, linestyle=':', alpha=0.5)
 
 axs[0, 1].plot(ore, pressioni, label='Funzione Originale', color="#17C2D2", linewidth=0.5)
